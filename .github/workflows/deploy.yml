@@ -1,0 +1,50 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main  # or your default branch name
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            # Create backup
+            cd /var/www/snack
+            timestamp=$(date +%Y%m%d_%H%M%S)
+            cp -r Snacksprint-main Snacksprint-main_backup_$timestamp
+            
+            # Pull latest code
+            cd /var/www/snack/Snacksprint-main
+            git pull origin main
+            
+            # Install Composer dependencies
+            composer install --no-interaction --no-dev --optimize-autoloader
+            
+            # Clear Laravel caches
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
+            
+            # Stop Vite if running
+            pkill -f "vite" || true
+            
+            # Install dependencies and build assets
+            npm install
+            npm run build
+            
+            # Restart queue
+            php artisan queue:restart
+            
+            # Restart Nginx
+            sudo systemctl restart nginx 
