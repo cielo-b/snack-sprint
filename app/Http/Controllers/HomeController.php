@@ -50,7 +50,7 @@ class HomeController extends Controller
             $payments = $payments->where('machine_id', $request->machine);
         }
 
-        $payments = $payments->get();
+        $payments = $payments->paginate(10);
 
         $successfulPayments = $payments->where('status', 1);
 
@@ -110,7 +110,7 @@ class HomeController extends Controller
             }
             return 0;
         });
-        $data['payments'] = $payments->slice(0, 100);
+        $data['payments'] = $payments;
         $data['machines'] = Machine::all();
         $data['dateFilter'] = $dateFilter;
 

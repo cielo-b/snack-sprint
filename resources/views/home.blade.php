@@ -192,6 +192,69 @@
                 @endforeach
                 </tbody>
             </table>
+            <div class="d-flex justify-content-center">
+                @if($data['payments']->hasPages())
+                    <nav>
+                        <ul class="pagination">
+                            {{-- Previous Button --}}
+                            @if($data['payments']->currentPage() > 1)
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $data['payments']->appends(request()->query())->url($data['payments']->currentPage() - 1) }}">Previous</a>
+                                </li>
+                            @endif
+
+                            @php
+                                $currentPage = $data['payments']->currentPage();
+                                $lastPage = $data['payments']->lastPage();
+                                $start = max(4, $currentPage - 1);
+                                $end = min($lastPage - 3, $currentPage + 1);
+                            @endphp
+
+                            {{-- First three pages --}}
+                            @for($i = 1; $i <= 3; $i++)
+                                <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
+                                    <a class="page-link" href="{{ $data['payments']->appends(request()->query())->url($i) }}">{{ $i }}</a>
+                                </li>
+                            @endfor
+
+                            {{-- Ellipsis if needed --}}
+                            @if($start > 4)
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            @endif
+
+                            {{-- Current page range --}}
+                            @for($i = $start; $i <= $end; $i++)
+                                @if($i > 3 && $i < $lastPage - 2)
+                                    <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ $data['payments']->appends(request()->query())->url($i) }}">{{ $i }}</a>
+                                    </li>
+                                @endif
+                            @endfor
+
+                            {{-- Ellipsis if needed --}}
+                            @if($end < $lastPage - 3)
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            @endif
+
+                            {{-- Last three pages --}}
+                            @for($i = $lastPage - 2; $i <= $lastPage; $i++)
+                                @if($i > 3)
+                                    <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ $data['payments']->appends(request()->query())->url($i) }}">{{ $i }}</a>
+                                    </li>
+                                @endif
+                            @endfor
+
+                            {{-- Next Button --}}
+                            @if($data['payments']->currentPage() < $data['payments']->lastPage())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $data['payments']->appends(request()->query())->url($data['payments']->currentPage() + 1) }}">Next</a>
+                                </li>
+                            @endif
+                        </ul>
+                    </nav>
+                @endif
+            </div>
         </div>
     </div>
 </div>
